@@ -1,49 +1,41 @@
-# Car Price Prediction App
+# Student Clustering Project
+
+This repository contains an unsupervised clustering pipeline that groups students based on demographic information and interests. We use the K‑Means algorithm, along with methods like the elbow plot and silhouette score, to determine the optimal number of clusters.
+
 This app has been built using Streamlit and deployed with Streamlit community cloud
 
 [Visit the app here](https://loan-application-app.streamlit.app/)
 
-password - streamlit
-
-This project is a machine learning web application built with Streamlit that predicts used car prices based on user-provided details such as model, mileage, fuel type, gearbox type, and more.
-
-The model is trained on a cleaned car dataset using a Random Forest Regressor, and the `Model` column is encoded using Leave-One-Out Encoding to handle high cardinality. The app includes dynamic dropdowns populated from the dataset and displays real-time predictions.
-
----
-
-## Features
-
-* User-friendly interface powered by Streamlit.
-* Real-time prediction of used car sales price based on user input.
-* Accessible via Streamlit Community Cloud.
-
 ---
 ## Dataset
 
-* Data sourced from Kaggle: https://www.kaggle.com/datasets/deepcontractor/car-price-prediction-challenge 
-
-## Input Features
-
-* Model (encoded with Leave-One-Out)
-* Mileage
-* Car Age
-* Manufacturer
-* Fuel type
-* Engine volume
-* Gear box type
-* Drive wheels
+* Data sourced from Kaggle: https://www.kaggle.com/datasets/zabihullah18/students-social-network-profile-clustering 
 
 ---
 
-## Machine Learning Model
+## ⚙️ Preprocessing Steps
 
-* Model: RandomForestRegressor
-* Preprocessing:
+1. **Drop empty records** where both `age` and `gradyear` are missing.
+2. **Clean `age`** by removing text suffixes (e.g. "19.Mar") and filling missing ages with median per `gradyear`.
+3. **Filter out outliers** in `age` outside the 1st–99th percentile.
+4. **Encode `gender`** as one-hot dummy variables.
 
-  * Remove outliers
-  * Handle missing values
-  * Leave-One-Out Encoding on `Model`
-  * One-hot encoding for other categorical features
+---
+
+## 📊 Clustering Method
+
+* **Algorithm**: K‑Means
+* **Selecting *k***:
+
+  * **Elbow method**: Plot inertia vs. *k* and look for the point of diminishing returns.
+  * **Silhouette score**: Compute average silhouette for *k* = 2…10 and choose the highest.
+
+---
+
+## 📈 Visualization
+
+* **Elbow plot**: `plot_elbow_score()` generates and saves `{project_root}/elbow_plot.png`.
+* **Silhouette plot**: `plot_silhouette_score()` shows silhouette score vs. *k*.
 
 ---
 
@@ -54,11 +46,6 @@ The model is trained on a cleaned car dataset using a Random Forest Regressor, a
 - **Matplotlib** and **Seaborn**: For exploratory data analysis and visualization (if applicable).
 
 ---
-
-## Future Enhancements
-* Adding support for multiple datasets.
-* Incorporating explainability tools like SHAP to provide insights into predictions.
-* Adding visualizations to better represent user input and model predictions.
 
 ## Installation (for local deployment)
 If you want to run the application locally, follow these steps:
@@ -80,3 +67,5 @@ If you want to run the application locally, follow these steps:
 4. Run the Streamlit application:
    ```bash
    streamlit run app.py
+
+---

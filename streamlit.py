@@ -1,13 +1,11 @@
 import pandas as pd
 import pickle
 import streamlit as st
-from datetime import datetime
 
 # Set the page title and description
-st.title("Used Car Price Predictor")
+st.title("Student Marketing Clustering")
 st.write("""
-This app predicts the sale price of used cars produced after year 1990.
-""")
+This app groups high school students into two clusters based on their social media profiles.""")
 
 # # Optional password protection (remove if not needed)
 # password_guess = st.text_input("Please enter your password?")
@@ -16,88 +14,68 @@ This app predicts the sale price of used cars produced after year 1990.
 #     st.stop()
 
 # Load dataset to get dropdown values
-df = pd.read_csv("data/processed/Cleaned_Car_Price.csv")
+df = pd.read_csv("data/processed/clustered_data.csv")
 
 # Load the pre-trained model and encoder
-with open("models/RFmodel.pkl", "rb") as f:
-    rf_model = pickle.load(f)
-
-with open("models/loo_encoder.pkl", "rb") as f:
-    loo_encoder = pickle.load(f)
+with open("models/kmeans_model.pkl", "rb") as f:
+    kmean_model = pickle.load(f)
 
 
 # Prepare the form to collect user inputs
 with st.form("user_inputs"):
-    st.subheader("Car Details")
+    st.subheader("Student Profile")
     
-    # Dropdown inputs
-    manufacturer = st.selectbox("Manufacturer", sorted(df['Manufacturer'].unique()))
-    model = st.selectbox("Model", sorted(df['Model'].unique()))
-    fuel_type = st.selectbox("Fuel Type", sorted(df['Fuel type'].dropna().unique()))
-    engine_volume = st.selectbox("Engine Volume", sorted(df['Engine volume'].dropna().unique()))
-    gear_box = st.selectbox("Gear Box Type", sorted(df['Gear box type'].dropna().unique()))
-    drive_wheels = st.selectbox("Drive Wheels", sorted(df['Drive wheels'].dropna().unique()))
+    gradyear = st.selectbox("Graduation Year", sorted(df["gradyear"].unique()))
+    gender = st.radio("Gender", ["M", "F", "Unknown"])
+    age = st.number_input("Age", min_value=15, max_value=20)
+    num_friends = st.number_input("Number of Friends", min_value=0, max_value=500, value=10)
 
-    # Numeric inputs
-    mileage = st.number_input("Mileage (in km)", min_value=0, step=1000)
-    cylinders = st.number_input("Cylinders", min_value=1, max_value = 16, step=1)
-    prod_year = st.number_input("Production Year", min_value=1990, max_value=datetime.now().year, step=1)
-    car_age = datetime.now().year - prod_year
-            
+    st.markdown("**Select interests (check all that apply):**")
+    # list of all the "key word" columns (sports/interests)
+    keyword = [
+        "basketball", "football", "soccer", "softball", "volleyball",
+        "swimming", "cheerleading", "baseball", "tennis", "sports",
+        "cute", "sex", "sexy", "hot", "kissed", "dance", "band",
+        "marching", "music", "rock", "god", "church", "jesus", "bible",
+        "hair", "dress", "blonde", "mall", "shopping", "clothes",
+        "hollister", "abercrombie", "die", "death", "drunk", "drugs"
+    ]
+    interest = {col: st.checkbox(col.replace("_", " ").title()) for col in keyword}
+
     # Submit button
-    submitted = st.form_submit_button("Predict Car Price")
+    submitted = st.form_submit_button("Submit")
 
 
 # Handle the dummy variables to pass to the model
 if submitted:
-    input = {
-        "Model": model,
-        "Mileage": mileage,
-        "Cylinders": cylinders,
-        "Car Age": car_age,
-        "Manufacturer": manufacturer,
-        "Fuel type": fuel_type,
-        "Engine volume": engine_volume,
-        "Gear box type": gear_box,
-        "Drive wheels": drive_wheels      
+    if age is None:
+        median_age_per_year = df.groupby('gradyear')['age'].median()
+        age = df['gradyear'].map(median_age_per_year)
+   
+    input_dict = {
+        "gradyear": gradyear,
+        "age": age,
+        "NumberOffriends": num_friends,
+        **{col: int(val) for col, val in interest.items()},
+        "gender_F": 1 if gender == "F" else 0,
+        "gender_M": 1 if gender == "M" else 0,
+        "gender_unknown": 1 if (gender != "M" and gender != "F") else 0
     }
-
-    input_df = pd.DataFrame([input])
-
-    def preprocess_input(input_df, ref_df):
-        # Combine input with ref data to ensure same dummy columns
-        df = pd.concat([input_df, ref_df], ignore_index=True)
-
-        # Encode 'Model' feature
-        df['Model'] = loo_encoder.transform(df[['Model']])
-
-        # One-hot encode other categorical features
-        df = pd.get_dummies(df, 
-                            columns=[
-                                        'Manufacturer', 
-                                        'Fuel type', 
-                                        'Engine volume',
-                                        'Gear box type', 
-                                        'Drive wheels'
-                                        ], 
-                            dtype=int)
-               
-        # Keep only first row (user input)
-        return df.iloc[0:1]
-     
-    # Prepare the input for prediction. This has to go in the same order as it was trained
-    prediction_input = preprocess_input(input_df, df)
-    print(prediction_input)
-    
-    # Make prediction and display result
+    input = pd.DataFrame([input_dict])
+    input.to_csv('data/processed/Processed_Input.csv', index=None)
+   
     try:
-        new_prediction = rf_model.predict(prediction_input)[0]
-        st.success(f"Estimated Price: ${new_prediction:,.2f}")
+        cluster = kmean_model.predict(input)[0]
+        
+        st.subheader("Prediction")
+        st.write(f"Cluster: **{cluster}**")
+
     except Exception as e:
         st.error(f"Prediction failed: {e}")
 
 st.write(
-    """We used a machine learning (Random Forest) model to predict the price, the features used in this prediction are ranked by relative
-    importance below."""
+    """We used the K-Means model to calculate the optimal number of clusters. 
+        The Elbow Score and Sihouette Scores of the model are illustrated below."""
 )
-st.image("feature_importance.png")
+st.image("sscore.png")
+st.image("wcss.png")

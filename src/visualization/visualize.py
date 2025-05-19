@@ -1,73 +1,43 @@
 
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import accuracy_score, confusion_matrix
-import numpy as np
-import pandas as pd
 
-def plot_correlation_heatmap(data):
+
+def plot_silhouette_score(scores):
     """
-    Plot a correlation heatmap for the given data.
+    Plot Silhouette Score of the model.
     
     Args:
         data (pandas.DataFrame): The input data.
     """
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(data.corr(), annot=True, cmap='coolwarm')
-    plt.title('Correlation Heatmap', fontsize=16)
-    plt.show()
+    score_key = list(scores.keys())
+    score_val = list(scores.values())
 
-def plot_feature_importance(model, x):
-    """
-    Plot a bar chart showing the top 5 feature importances.
-    
-    Args:
-        feature_names (list): List of feature names.
-        feature_importances (list): List of feature importance values.
-    """
-   # 1. Create a DataFrame of feature importances
-    feat_imp = pd.DataFrame({
-        'Feature': x.columns,
-        'Importance': model.feature_importances_
-    })
+    plt.figure(figsize=(8, 5))
+    plt.plot(score_key, score_val, marker='o', linestyle='-')
+    plt.xticks(score_key)
+    plt.xlabel("Number of clusters (k)")
+    plt.ylabel("Silhouette Score")
+    plt.title("Silhouette Score vs. Number of Clusters")
 
-    # 2. Extract generic feature name from encoded feature (e.g., 'Manufacturer_BMW' vs 'Manufacturer')
-    feat_imp['Group'] = feat_imp['Feature'].str.extract(r'^([^_]+)')
-
-    # 3. Aggregate by group
-    grouped_imp = feat_imp.groupby('Group')['Importance'].sum().reset_index()
-
-    # 4. Sort
-    grouped_imp = grouped_imp.sort_values(by='Importance', ascending=False)
-
-    # 5. Plot
-    fig, ax = plt.subplots()
-    sns.barplot(x='Importance', y='Group', data=grouped_imp, ax=ax)
-    plt.title("Features by Importance")
-    plt.xlabel("Importance")
-    plt.ylabel("Features")
+    plt.legend()
     plt.tight_layout()
-    fig.savefig("feature_importance.png")
-
-
-def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title='Confusion Matrix'):
+    plt.savefig("sscore.png")
+    
+    
+def plot_elbow_score(K, inertias):
     """
-    Plot the confusion matrix for the given true and predicted labels.
+    Plot Elbow Score (WCSS) showing of the model.
     
     Args:
-        y_true (numpy.ndarray): Array of true labels.
-        y_pred (numpy.ndarray): Array of predicted labels.
-        classes (list): List of class labels.
-        normalize (bool, optional): Whether to normalize the confusion matrix. Default is False.
-        title (str, optional): Title for the plot. Default is 'Confusion Matrix'.
+        k = range
+        inertias = inertia values
     """
-    cm = confusion_matrix(y_true, y_pred)
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    
+    plt.figure(figsize=(8, 5))
+    plt.plot(K, inertias)
+    plt.xlabel('Number of clusters (k)')
+    plt.ylabel('Inertia (within‐cluster SSE)')
+    plt.title('Elbow Plot')
+    plt.savefig("wcss.png")
+     
 
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, cmap='Blues', xticklabels=classes, yticklabels=classes)
-    plt.xlabel('Predicted', fontsize=12)
-    plt.ylabel('Actual', fontsize=12)
-    plt.title(title, fontsize=16)
-    plt.show()

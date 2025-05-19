@@ -1,53 +1,31 @@
 import pandas as pd
-from datetime import datetime
-import category_encoders as ce
-import pickle
+
 
 # create dummy features or encoding
 def create_dummy_vars(df):
     """Perform feature engineering and encoding"""
+    # Extract age as integers (discard decimal places and random invalid values ex. '19.Mai')
+    df['age'] = df['age'].astype(str).str.extract(r'(\d+)', expand=False)
+     
+    # Impute missing 'age' based on median age for each gradyear
+    df_nonnull = df[df['age'].notnull()].copy()
+    df_nonnull['age'] = df_nonnull['age'].astype(int)
+    median_age_per_year = df_nonnull.groupby('gradyear')['age'].median()
     
-    # Calculate 'Car Age' feature based on Prod. Year
-    df['Car Age'] = datetime.now().year - df['Prod. year']
-    df.drop(columns=['Prod. year'], inplace=True)
+    df['age'] = df['age'].fillna(df['gradyear'].map(median_age_per_year))
+    df['age']= df['age'].astype(int)
     
-    # Drop features with low importance or that can be implied by Make&Model
-    df = df.drop('Doors', axis=1)
-    df = df.drop('Airbags', axis=1)
-    df = df.drop('Wheel', axis=1)
-    df = df.drop('Leather interior', axis=1)
-    df = df.drop('Category', axis=1)
-    df = df.drop('Color', axis=1)
-
-    # Before encoding, save cleaned file with no target variable for Streamlit to consume
-    cleaned_df = df.copy().drop('Price', axis=1)
-    cleaned_df.to_csv('data/processed/Cleaned_Car_Price.csv', index=None)
+    # Remove outliers in age - only keep data in 1st to 99th percentile range
+    lower = df['age'].quantile(0.01)
+    upper = df['age'].quantile(0.99)
+    df = df[(df['age'] >= lower) & (df['age'] <= upper)]
+    
+    # Impute missing 'gender'
+    df['gender'] = df['gender'].fillna('unknown')
     
     # Create dummy variables for low cardinality 'object' type variables
-    df = pd.get_dummies(df, 
-                        columns=[
-                                    'Manufacturer', 
-                                    'Fuel type', 
-                                    'Engine volume',
-                                    'Gear box type', 
-                                    'Drive wheels'
-                                    ], 
-                        dtype=int)
+    df = pd.get_dummies(df, columns=['gender'], dtype=int)
 
-    # Separate the input features and target variable
-    X = df.drop('Price', axis=1)
-    y = df['Price']
-    
-    # Apply LOO encoding to high-cardinality categorical column 'Model'
-    loo_encoder = ce.LeaveOneOutEncoder(cols=['Model'])
-    X['Model'] = loo_encoder.fit_transform(X[['Model']], y)
-    # Save trained encoder model for Streamlit to consume
-    with open('models/loo_encoder.pkl', 'wb') as f:
-        pickle.dump(loo_encoder, f)
+    df.to_csv('data/processed/Processed_Cluster_Marketing.csv', index=None)
 
-    # Save processed data
-    processed_df = X.copy()
-    processed_df['Price'] = y
-    processed_df.to_csv('data/processed/Processed_Car_Price.csv', index=None)
-
-    return X, y
+    return df
