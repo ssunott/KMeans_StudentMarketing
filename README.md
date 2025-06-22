@@ -4,7 +4,7 @@ This repository contains an unsupervised clustering pipeline that groups student
 
 This app has been built using Streamlit and deployed with Streamlit community cloud
 
-[Visit the app here](https://loan-application-app.streamlit.app/)
+[Visit the app here](https://studentmarketing.streamlit.app/)
 
 ---
 ## Dataset
@@ -52,7 +52,7 @@ If you want to run the application locally, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/credit_eligibility_application.git
+   git clone https://github.com/ssunott/KMeans_StudentMarketing.git
    cd credit_eligibility_application
 
 2. Create and activate a virtual environment:

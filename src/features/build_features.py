@@ -1,31 +1,27 @@
-import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
+def gender_to_numeric(x):
+    if x=="M":
+        return 1
+    if x=="F":
+        return 2
+    if x== 'unknown':
+        return 3
 
 # create dummy features or encoding
 def create_dummy_vars(df):
     """Perform feature engineering and encoding"""
-    # Extract age as integers (discard decimal places and random invalid values ex. '19.Mai')
-    df['age'] = df['age'].astype(str).str.extract(r'(\d+)', expand=False)
-     
-    # Impute missing 'age' based on median age for each gradyear
-    df_nonnull = df[df['age'].notnull()].copy()
-    df_nonnull['age'] = df_nonnull['age'].astype(int)
-    median_age_per_year = df_nonnull.groupby('gradyear')['age'].median()
-    
-    df['age'] = df['age'].fillna(df['gradyear'].map(median_age_per_year))
-    df['age']= df['age'].astype(int)
-    
-    # Remove outliers in age - only keep data in 1st to 99th percentile range
-    lower = df['age'].quantile(0.01)
-    upper = df['age'].quantile(0.99)
-    df = df[(df['age'] >= lower) & (df['age'] <= upper)]
-    
-    # Impute missing 'gender'
-    df['gender'] = df['gender'].fillna('unknown')
-    
-    # Create dummy variables for low cardinality 'object' type variables
-    df = pd.get_dummies(df, columns=['gender'], dtype=int)
 
-    df.to_csv('data/processed/Processed_Cluster_Marketing.csv', index=None)
+    # Apply encoding to 'gender' and scale the keyword features
+    scaled_df = df.copy()
+    scaled_df['gender'] = scaled_df['gender'].apply(gender_to_numeric)
 
-    return df
+    keyword = scaled_df.columns[4:40]
+    features = scaled_df[keyword]
+    scaler = StandardScaler().fit(features.values)
+    features = scaler.transform(features.values)
+    scaled_df[keyword] = features
+
+    scaled_df.to_csv('data/processed/Processed_Cluster_Marketing.csv', index=None)
+    
+    return scaled_df  

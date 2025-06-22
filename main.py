@@ -1,6 +1,7 @@
 from src.data.make_dataset import load_and_preprocess_data
 from src.features.build_features import create_dummy_vars
 from src.models.train_model import train_KMeanmodel
+from src.visualization.visualize import plot_cluster
 
 if __name__ == "__main__":
     # Load and preprocess the data
@@ -8,7 +9,11 @@ if __name__ == "__main__":
     df = load_and_preprocess_data(data_path)
            
     # Create dummy variables and separate features and target
-    df = create_dummy_vars(df)
+    scaled_df = create_dummy_vars(df)
 
     # Train the k-means model
-    train_KMeanmodel(df)
+    clustered_df = train_KMeanmodel(scaled_df, df)
+    
+    # Visualize clusters
+    plot_cluster(clustered_df)
+    
