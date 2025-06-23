@@ -25,7 +25,18 @@ def plot_silhouette_score(scores):
     plt.legend()
     plt.tight_layout()
     plt.savefig("sscore.png")
-    
+
+def plot_db(Ks, db_scores, best_k_db):
+    plt.figure(figsize=(8, 4))
+    plt.plot(Ks, db_scores, marker='o', linestyle='-')
+    plt.axvline(best_k_db, color='red', linestyle='--', 
+                label=f'Best k = {best_k_db}')
+    plt.title('Davies–Bouldin Index vs. Number of Clusters')
+    plt.xlabel('Number of clusters (k)')
+    plt.ylabel('Davies–Bouldin Index (lower is better)')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("dbscore.png")
     
 def plot_elbow_score(K, inertias):
     """

@@ -2,7 +2,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
 import pickle
-from src.visualization.visualize import plot_silhouette_score, plot_elbow_score
+from src.visualization.visualize import plot_silhouette_score, plot_elbow_score, plot_db
 from kneed import KneeLocator
 
 
@@ -26,10 +26,11 @@ def train_KMeanmodel(X, df):
 
     print(f"\nBest k by silhouette score: {best_k} (score={best_score:.4f})")
     # Plot and save silhouette scores image
-    #plot_silhouette_score(scores)
+    plot_silhouette_score(scores)
 
     # 2. Find best k using davies_bouldin score
     db_scores = []
+    Ks = range(2, 11)
     K = range(2, 11)
     for k in K:
         km = KMeans(n_clusters=k, random_state=0, init='k-means++').fit(X)
@@ -40,6 +41,7 @@ def train_KMeanmodel(X, df):
     # find best k (minimum DB index)
     best_k_db = K[db_scores.index(min(db_scores))]
     print("\nBest k by Davies–Bouldin:", best_k_db)
+    plot_db(Ks, db_scores, best_k_db)
     
     # 3. Find best k using elbow method
     inertias = []
