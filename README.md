@@ -1,6 +1,6 @@
 # Student Clustering Project
 
-This repository contains an unsupervised clustering pipeline that groups students based on demographic information and interests. We use the K‑Means algorithm, along with methods like the elbow plot and silhouette score, to determine the optimal number of clusters.
+This repository contains an unsupervised clustering pipeline that groups students based on demographic information and interests. We use the K‑Means algorithm, along with methods like the elbow plot, silhouette score and Davis-Bouldin index, to determine the optimal number of clusters.
 
 This app has been built using Streamlit and deployed with Streamlit community cloud
 
@@ -15,7 +15,7 @@ This app has been built using Streamlit and deployed with Streamlit community cl
 
 ## ⚙️ Preprocessing Steps
 
-1. **Drop empty records** where both `age` and `gradyear` are missing.
+1. **Drop empty records** where `gradyear` is missing.
 2. **Clean `age`** by removing text suffixes (e.g. "19.Mar") and filling missing ages with median per `gradyear`.
 3. **Filter out outliers** in `age` outside the 1st–99th percentile.
 4. **Encode `gender`** as numerical value.
@@ -38,7 +38,7 @@ This app has been built using Streamlit and deployed with Streamlit community cl
 
 * **Elbow plot**: `plot_elbow_score()` generates and saves `{project_root}/elbow_plot.png`.
 * **Silhouette plot**: `plot_silhouette_score()` shows silhouette score vs. *k*.
-* **Clustering analysis plot**: `plot_cluster()` shows composition of each cluster.
+* **Clustering analysis plot**: `plot_cluster()` shows composition of each cluster and top 10 keywords mentioned in each cluster.
 
 ---
 

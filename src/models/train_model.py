@@ -14,12 +14,12 @@ def train_KMeanmodel(X, df):
     best_k = None
     best_score = -1
     scores = {}
-    print(f"\nFinding best k by silhouette score:")
+    #print(f"\nFinding best k by silhouette score:")
     for k in range(2, 10): 
         ypred = KMeans(n_clusters=k, random_state=42, n_init=10).fit_predict(X)
         score = silhouette_score(X, ypred)
         scores[k] = score
-        print(f"k={k:2d}  silhouette score = {score:.4f}")
+        #print(f"k={k:2d}  silhouette score = {score:.4f}")
         if score > best_score:
             best_score = score
             best_k = k
@@ -39,7 +39,7 @@ def train_KMeanmodel(X, df):
 
     # find best k (minimum DB index)
     best_k_db = K[db_scores.index(min(db_scores))]
-    print("Best k by Davies–Bouldin:", best_k_db)
+    print("\nBest k by Davies–Bouldin:", best_k_db)
     
     # 3. Find best k using elbow method
     inertias = []

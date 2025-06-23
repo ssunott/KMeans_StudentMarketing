@@ -1,4 +1,5 @@
 from sklearn.preprocessing import StandardScaler
+import pickle
 
 def gender_to_numeric(x):
     if x=="M":
@@ -23,5 +24,8 @@ def create_dummy_vars(df):
     scaled_df[keyword] = features
 
     scaled_df.to_csv('data/processed/Processed_Cluster_Marketing.csv', index=None)
-    
+   
+    with open("models/scaler.pkl", "wb") as f:
+        pickle.dump(scaler, f)
+   
     return scaled_df  
